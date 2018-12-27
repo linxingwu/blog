@@ -7,6 +7,8 @@ tags:
 ---
 # ILoadBalancer
 
+这是最高级的一个抽象类.它有一个抽象的实现AbstractLoadBalancer.
+
 ```java
 
 public interface ILoadBalancer {
@@ -62,7 +64,6 @@ public interface ILoadBalancer {
 	public List<Server> getAllServers();
 }
 ```
-这是最高级的一个抽象类.它有一个抽象的实现AbstractLoadBalancer.
 
 ## AbstractLoadBalancer
 
