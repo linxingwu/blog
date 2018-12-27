@@ -149,7 +149,33 @@ public interface LoadBalancerClient extends ServiceInstanceChooser {
         return null;
     }
 ```
-实现的思路就是通过ILoadBalancer的chooseServer方法选择一个具体的server，然后调用execute发起具体的请求，返回请求结果。所以重点就在于负载均衡器是如何选择一个具体Server的。
+实现的思路就是通过ILoadBalancer的chooseServer方法选择一个具体的server，然后调用execute发起具体的请求，返回请求结果。发起的请求过程中包含了将serverId转换为具体的Url的过程，实际最终调用了LoadBalancer的reconstructURI方法。
+```java
+
+	@Override
+	public URI reconstructURI(ServiceInstance instance, URI original) {
+		Assert.notNull(instance, "instance can not be null");
+		String serviceId = instance.getServiceId();
+		RibbonLoadBalancerContext context = this.clientFactory
+				.getLoadBalancerContext(serviceId);
+
+		URI uri;
+		Server server;
+		if (instance instanceof RibbonServer) {
+			RibbonServer ribbonServer = (RibbonServer) instance;
+			server = ribbonServer.getServer();
+			uri = updateToSecureConnectionIfNeeded(original, ribbonServer);
+		} else {
+			server = new Server(instance.getScheme(), instance.getHost(), instance.getPort());
+			IClientConfig clientConfig = clientFactory.getClientConfig(serviceId);
+			ServerIntrospector serverIntrospector = serverIntrospector(serviceId);
+			uri = updateToSecureConnectionIfNeeded(original, clientConfig,
+					serverIntrospector, server);
+		}
+		return context.reconstructURIWithServer(server, uri);
+	}
+```
+所以重点就在于负载均衡器是如何选择一个具体Server的。
 ```java
     public Server chooseServer(Object key) {
         if (counter == null) {
@@ -218,6 +244,8 @@ public interface LoadBalancerClient extends ServiceInstanceChooser {
 > Interface that defines the operations for a software loadbalancer. A typical loadbalancer minimally need a set of servers to loadbalance for, a method to mark a particular server to be out of rotation and a call that will choose a server from the existing list of server.
  
 RoundRobinRule中维护了一个AtomicInteger类型的index，用来表示当前轮询到的server位置，同时在方法内部定义了一个int的轮询次数，如果超过10次就直接返回null了。每次轮询的过程实际上就是把index+1，然后尝试返回这个server，尝试的过程就是对server的检验，是否还活着是否还能提供服务。
+
+
 
 以上就是最简单的一版关于Ribbon原理的说明，简单来说就是通过@LoadBalanced把restTemplate添加一个拦截器，在拦截器中调用负载均衡器的execute方法来发起具体的请求，负载均衡器又通过IRule来实现serverid到具体的ip地址的转换，转换的过程也是一个负载均衡的过程。下一篇我再详细讲解各个组件具体的实现原理。
  
