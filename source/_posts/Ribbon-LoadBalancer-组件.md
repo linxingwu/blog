@@ -419,7 +419,7 @@ public abstract class AbstractLoadBalancer implements ILoadBalancer {
     ```
 2. ServerListUpdater
 
-    构造方法中，同时调用了
+    DynamicServerListLoadBalancer构造方法中，同时调用了
     ```java
         public void enableAndInitLearnNewServersFeature() {
             LOGGER.info("Using serverListUpdater {}", serverListUpdater.getClass().getSimpleName());
