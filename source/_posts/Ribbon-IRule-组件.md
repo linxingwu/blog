@@ -99,7 +99,7 @@ if (random_number between 1 & 10) {
 
 WeightedResponseTimeRule中init时启动了一个定时任务每隔30s运行一次。启动配置部分略过了，直接看定时任务做了什么操作
 
-```
+```java
         public void maintainWeights() {
             ILoadBalancer lb = getLoadBalancer();
             if (lb == null) {
@@ -149,7 +149,7 @@ WeightedResponseTimeRule中init时启动了一个定时任务每隔30s运行一�
 首先定义了一个double totalResponseTime 用来统计所有服务实例的累积平均响应时间。然后用总的时间-本实例平均响应时间，计算出本实例的权重，也就是说响应时间越久权重越轻。再用一个weightSoFar来计算每一个server的上限，同时也是下一个server的下限。存在一个有序的list中，这样和serverList就能按照index一一对应。
 
 计算好权重区间之后看看怎么使用的
-```
+```java
     public Server choose(ILoadBalancer lb, Object key) {
         if (lb == null) {
             return null;
