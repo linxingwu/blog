@@ -24,11 +24,11 @@ hystrix借鉴docker的舱壁隔离模式，为每一个服务开启独立的线�
 hystrix官网上提到了一个隔离策略（execution.isolation.strategy），这个隔离策略只有两种，一种按照线程隔离，一种按照信号量隔离。按照线程隔离更安全，按照信号量能提供更高的并发。
 
 ![hystrix隔离策略](https://duaw26jehqd4r.cloudfront.net/items/3e0W2E1k3b2b2d2u0p1L/soa-5-isolation-focused-640.png)
-![hystrix运行原理](https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png)
 
 ## 熔断器原理
 
 断路器的实现原理是在一段时间内超过指定请求数量有超过指定比例请求失败，则会开启断路器，使得断路器进入打开状态，后续的请求将不再发起实际请求，而是直接返回fallback。
+![hystrix运行原理](https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png)
 ```java
 circuitBreaker.requestVolumeThreshold=20
 circuitBreaker.errorThresholdPercentage=50
