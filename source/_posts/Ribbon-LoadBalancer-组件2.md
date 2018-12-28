@@ -55,7 +55,7 @@ tags:
         }
     ```
 
- 这个方法简单明了，有Rule就根据config和Rule的class实例化一个，没有就new AvailabilityFilteringRule()。然后new一个BaseLoadBalancer，最后把心的LoadBalancer放到map里。随后在chooseServer的时候发挥作用
+ 这个方法简单明了，有Rule就根据config和Rule的class实例化一个，没有就new AvailabilityFilteringRule()。然后new一个BaseLoadBalancer，最后把新的LoadBalancer放到map里。随后在chooseServer的时候发挥作用。在RibbonClientConfiguration中可以得知，最终的默认实现是ZoneAvoidanceRule。
  
  ## chooseServer
  
