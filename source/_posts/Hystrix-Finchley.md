@@ -19,6 +19,20 @@ feign.hystrix.enabled=true
 
 ## 高大上的hystrix
 
+
+![hystrix运行原理](https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png)
+ 
+图中清楚的表达了Hystrix的运行流程。
+1. 创建HystrixCommand或者HystrixObserveableCommand
+2. 调用 execute,queue,observe,toObserve 4个方法之一
+3. 查找缓存，如果命令有对应的缓存直接返回缓存。
+4. 判断断路器是否触发。
+5. 如果断路器没有触发，查看信号量或者线程池是否已满。关于隔离策略后文有提到。
+6. 如果线程池或者信号量没有拒绝，运行construct或者run方法。
+7. 执行过程中遇到的成功，失败，拒绝，超时各种情况都会拿开计算断路器指标，最终决定是否触发断路器。
+8. 回退，服务降级
+9. 返回调用结果
+
 hystrix借鉴docker的舱壁隔离模式，为每一个服务开启独立的线程池，避免服务调用失败占用过多系统资源无法释放，影响了其他的服务。这种设计模式导致为每个服务分配的系统资源可能会不合适而导致系统负载不均衡。不过设计者认为这点代价相对于获得便利是值得的。
 
 hystrix官网上提到了一个隔离策略（execution.isolation.strategy），这个隔离策略只有两种，一种按照线程隔离，一种按照信号量隔离。按照线程隔离更安全，按照信号量能提供更高的并发。
@@ -27,8 +41,7 @@ hystrix官网上提到了一个隔离策略（execution.isolation.strategy），
 
 ## 熔断器原理
 
-断路器的实现原理是在一段时间内超过指定请求数量有超过指定比例请求失败，则会开启断路器，使得断路器进入打开状态，后续的请求将不再发起实际请求，而是直接返回fallback。
-![hystrix运行原理](https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png)
+断路器的实现原理是在一段时间内超过指定请求数量有超过指定比例请求失败，则会开启断路器，使得断路器进入打开状态，后续的请求将不再发起实际请求（断路器的源码分析以后会写一篇文章），而是直接返回fallback。
 ```java
 circuitBreaker.requestVolumeThreshold=20
 circuitBreaker.errorThresholdPercentage=50
@@ -37,7 +50,7 @@ metrics.rollingStats.timeInMilliseconds=10000
 ```
 以上配置的意思是：
 
-当hystrix遇到调用资源失败，会开启一个长度为10s的时间窗口，在这个时间窗口内，检测所有请求，如果失败数量大于20，并且比例大于50%就会开启断路器。断路器持续5s，5s后断路器进入半开状态，允许下一个请求发起调用，如果成功断路器关闭，否则继续打开。
+当hystrix遇到调用资源失败，会开启一个长度为10s的时间窗口，在这个时间窗口内，检测所有请求，如果请求数量大于20，并且失败比例大于50%就会开启断路器。断路器持续5s，5s后断路器进入半开状态，允许下一个请求发起调用，如果成功断路器关闭，否则继续打开。
 
 ## hystrix 监控
 
