@@ -1,7 +1,8 @@
 ---
 title: AMQP协议
 date: 2019-08-27 16:45:25
-tags: AMQP
+tags:
+    - AMQP
 ---
 # 概览
 
